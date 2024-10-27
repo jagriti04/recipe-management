@@ -35,14 +35,7 @@ public class RecipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(addedResponse);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> updateAllRecipeDetails(
-            @PathVariable Long id,
-            @RequestBody @Valid RecipeRequestDTO updatedRecipeDTO) {
-        ApiResponse<String> updatedAllResponse = recipeManagementService.updateRecipe(id, updatedRecipeDTO);
-        return ResponseEntity.ok(updatedAllResponse);
-    }
-
+    // To update one or more fields of recipe, patch api is used.
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> updatePartialRecipeDetails(@PathVariable Long id,
                                                                           @RequestBody @Valid RecipeUpdateRequestDTO updatedRecipeDTO) throws JsonMappingException {

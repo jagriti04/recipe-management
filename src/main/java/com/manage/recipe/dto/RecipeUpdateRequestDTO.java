@@ -17,21 +17,15 @@ import java.util.Optional;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecipeUpdateRequestDTO {
-
-    @JsonProperty("recipe_name")
     private Optional<String> name;
 
-    @JsonProperty("recipe_type")
     @Enumerated(EnumType.STRING)
     private Optional<RecipeType> recipeType;
 
-    @JsonProperty("serving_size")
     private Optional<Integer> servings;
 
-    @JsonProperty("ingredients")
     private Optional<List<IngredientDTO>> ingredients;
 
-    @JsonProperty("instructions")
     private Optional<String> instructions;
 
     private Optional<List<String>> removeIngredients;   // List of ingredient names to remove

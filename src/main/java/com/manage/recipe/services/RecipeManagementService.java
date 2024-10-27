@@ -61,25 +61,14 @@ public class RecipeManagementService {
         return saveRecipeToRepository(recipe, "Recipe successfully added");
     }
 
-    // Method to fully update a recipe
-    public ApiResponse<String> updateRecipe(Long id, RecipeRequestDTO requestDTO) {
-        Recipe recipe = findRecipeById(id); // Fetch existing recipe
-        // Map updated fields from DTO
-        modelMapper.map(requestDTO, recipe);
 
-        List<Ingredient> updatedIngredients = ingredientService.findOrCreateIngredientList(requestDTO.getIngredients());
-        recipe.setIngredients(updatedIngredients);
-
-        return saveRecipeToRepository(recipe, "Recipe successfully updated");
-    }
-
-    // Method for partial update (PATCH)
+    // Method for update recipe - one or more or all fields update
     public ApiResponse<String> updatePartialRecipe(Long id, RecipeUpdateRequestDTO updatedRecipeDTO) throws JsonMappingException {
         Recipe recipe = findRecipeById(id);
 
         // Handle ingredients
         List<Ingredient> updatedIngredients = null;
-        if (updatedRecipeDTO.getIngredients().isPresent()) {
+        if (updatedRecipeDTO.getIngredients()!= null && updatedRecipeDTO.getIngredients().isPresent()) {
             List<IngredientDTO> incomingIngredients = updatedRecipeDTO.getIngredients().get();
 
             // Get ingredients to remove
@@ -93,7 +82,10 @@ public class RecipeManagementService {
         logger.info("Partial updated request: {} and old recipe: {}", updatedRecipeDTO, recipe);
 
         objectMapper.updateValue(recipe, updatedRecipeDTO); // Update specific fields in Recipe entity
-        recipe.setIngredients(updatedIngredients);
+
+        if(updatedIngredients != null) {
+            recipe.setIngredients(updatedIngredients);
+        }
 
         return saveRecipeToRepository(recipe, "Recipe's given fields updated");
     }
