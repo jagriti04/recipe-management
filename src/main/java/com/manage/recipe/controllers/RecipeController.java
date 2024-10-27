@@ -5,6 +5,7 @@ import com.manage.recipe.dto.*;
 import com.manage.recipe.model.RecipeType;
 import com.manage.recipe.services.RecipeManagementService;
 import com.manage.recipe.services.SearchService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class RecipeController {
     }
 
     @PostMapping()
-    public ResponseEntity<ApiResponse<String>> addRecipe(@RequestBody RecipeRequestDTO recipeRequest) {
+    public ResponseEntity<ApiResponse<String>> addRecipe(@RequestBody @Valid RecipeRequestDTO recipeRequest) {
         ApiResponse<String> addedResponse = recipeManagementService.addRecipe(recipeRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(addedResponse);
     }
@@ -37,16 +38,16 @@ public class RecipeController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> updateAllRecipeDetails(
             @PathVariable Long id,
-            @RequestBody RecipeRequestDTO updatedRecipeDTO) {
-        ApiResponse<String> updatedResponse = recipeManagementService.updateRecipe(id, updatedRecipeDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(updatedResponse);
+            @RequestBody @Valid RecipeRequestDTO updatedRecipeDTO) {
+        ApiResponse<String> updatedAllResponse = recipeManagementService.updateRecipe(id, updatedRecipeDTO);
+        return ResponseEntity.ok(updatedAllResponse);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> updatePartialRecipeDetails(@PathVariable Long id,
-                                                                          @RequestBody RecipeUpdateRequestDTO updatedRecipeDTO) throws JsonMappingException {
+                                                                          @RequestBody @Valid RecipeUpdateRequestDTO updatedRecipeDTO) throws JsonMappingException {
         ApiResponse<String> updatedResponse = recipeManagementService.updatePartialRecipe(id, updatedRecipeDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(updatedResponse);
+        return ResponseEntity.ok(updatedResponse);
     }
 
     @DeleteMapping("/{id}")

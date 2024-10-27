@@ -16,11 +16,16 @@ import java.util.List;
 @NoArgsConstructor
 public class RecipeResponseDT0 {
     private Long id;
+
     public String name;
+
     @Enumerated(EnumType.STRING)
     private RecipeType recipeType;
-    public Integer servings;
-    public List<IngredientDTO> ingredientsList;
-    public String instructions;
+
+    private Integer servings;
+
+    private List<IngredientDTO> ingredients;
+
+    private String instructions;
 
 }

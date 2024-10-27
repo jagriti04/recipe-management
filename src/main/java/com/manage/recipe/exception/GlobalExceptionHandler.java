@@ -33,6 +33,12 @@ public class GlobalExceptionHandler extends Exception {
     }
 
 
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseEntity<ApiResponse> handleInvalidOrderException(InvalidInputException ex, WebRequest request) {
+        ApiResponse errorResponse = new ApiResponse( ex.getMessage(), HttpStatus.BAD_REQUEST.value(), false);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     // Handle generic exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse> handleGlobalException(Exception ex, WebRequest request) {

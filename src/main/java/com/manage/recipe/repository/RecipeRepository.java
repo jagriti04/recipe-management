@@ -28,8 +28,5 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long>{
             "(SELECT r2.id FROM Recipe r2 JOIN r2.ingredients i WHERE i.name IN :excludeIngredients)")
     List<Recipe> findByExcludeIngredients(@Param("excludeIngredients") List<String> excludeIngredients);
 
-    List<Recipe> findByDynamicFilters(
-            RecipeType recipeType, Integer servings, List<String> includeIngredients,
-            List<String> excludeIngredients, String searchInstructions);
 
 }

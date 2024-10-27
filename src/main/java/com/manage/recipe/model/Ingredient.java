@@ -17,7 +17,6 @@ public class Ingredient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
     public String name;
     public Double quantity;
     public String unit;

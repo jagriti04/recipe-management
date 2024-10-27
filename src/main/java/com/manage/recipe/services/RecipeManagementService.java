@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,10 +42,6 @@ public class RecipeManagementService {
                 .collect(Collectors.toList());
         RecipeResponse response = new RecipeResponse();
 
-        for(Recipe r: recipes){
-            logger.info("GET method- db response: {}", r.getIngredients());
-        }
-
         logger.info("GET method- response ingredients list is: {}", recipeResponseList);
 
         response.setRecipes(recipeResponseList);
@@ -55,76 +50,79 @@ public class RecipeManagementService {
     }
 
 
+    // Method to add a new recipe
     public ApiResponse<String> addRecipe(RecipeRequestDTO recipeRequest) {
-        // Map RecipeRequestDTO to Recipe entity using ModelMapper
         Recipe recipe = modelMapper.map(recipeRequest, Recipe.class);
-
-        // Handle ingredients separately
-        List<Ingredient> ingredients = recipeRequest.getIngredients().stream()
-                .map(ingredientDTO -> ingredientService.findOrCreateIngredient(ingredientDTO))
-                .collect(Collectors.toList());
-
-        recipe.setIngredients(ingredients); // Set the ingredient list
-
+        List<Ingredient> ingredients = ingredientService.findOrCreateIngredientList(recipeRequest.getIngredients());
+        recipe.setIngredients(ingredients);
+        recipe.setCreatedAt(LocalDateTime.now());
         logger.info("Adding recipe and ingredients are {}", recipe.getIngredients());
 
-        recipe.setCreatedAt(LocalDateTime.now()); // Set createdAt timestamp
-        recipe.setUpdatedAt(LocalDateTime.now()); // Set updatedAt timestamp
-
-        recipeRepository.save(recipe); // Save to the database
-
-        ApiResponse<String> response = new ApiResponse<>(
-                "Recipe successfully added",
-                recipe.getName(),
-                true
-        );
-        return response;
+        return saveRecipeToRepository(recipe, "Recipe successfully added");
     }
 
-    public ApiResponse<String> updateRecipe(Long id, RecipeRequestDTO updatedRecipeDTO) {
-        // Check if the entity exists, if it doesn't then throw error
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe with id:" + id +"is not existed"));
+    // Method to fully update a recipe
+    public ApiResponse<String> updateRecipe(Long id, RecipeRequestDTO requestDTO) {
+        Recipe recipe = findRecipeById(id); // Fetch existing recipe
+        // Map updated fields from DTO
+        modelMapper.map(requestDTO, recipe);
 
-        modelMapper.map(updatedRecipeDTO, recipe);
+        List<Ingredient> updatedIngredients = ingredientService.findOrCreateIngredientList(requestDTO.getIngredients());
+        recipe.setIngredients(updatedIngredients);
 
-        recipe.setUpdatedAt(LocalDateTime.now());
-        Recipe updatedRecipe = recipeRepository.save(recipe);
-
-        RecipeResponseDT0 recipeResponse = modelMapper.map(updatedRecipe, RecipeResponseDT0.class);
-
-        ApiResponse<String> response = new ApiResponse<>(
-                "Recipe successfully updated",
-                recipeResponse.getName(),
-                true
-        );
-        return response;
+        return saveRecipeToRepository(recipe, "Recipe successfully updated");
     }
 
+    // Method for partial update (PATCH)
     public ApiResponse<String> updatePartialRecipe(Long id, RecipeUpdateRequestDTO updatedRecipeDTO) throws JsonMappingException {
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Person with uid" + id + "is not existed"));
+        Recipe recipe = findRecipeById(id);
 
+        // Handle ingredients
+        List<Ingredient> updatedIngredients = null;
+        if (updatedRecipeDTO.getIngredients().isPresent()) {
+            List<IngredientDTO> incomingIngredients = updatedRecipeDTO.getIngredients().get();
 
-        objectMapper.updateValue(recipe, updatedRecipeDTO);
+            // Get ingredients to remove
+            List<String> ingredientsToRemove = null;
+            if (updatedRecipeDTO.getRemoveIngredients() != null && !updatedRecipeDTO.getRemoveIngredients().isEmpty()) {
+                ingredientsToRemove = updatedRecipeDTO.getRemoveIngredients().get();
+            }
+            updatedIngredients = ingredientService.mergeIngredients(recipe.getIngredients(), incomingIngredients, ingredientsToRemove);
+        }
 
-        Recipe updatedRecipe = recipeRepository.save(recipe);
+        logger.info("Partial updated request: {} and old recipe: {}", updatedRecipeDTO, recipe);
 
-        RecipeResponseDT0 recipeResponse = modelMapper.map(updatedRecipe, RecipeResponseDT0.class);
+        objectMapper.updateValue(recipe, updatedRecipeDTO); // Update specific fields in Recipe entity
+        recipe.setIngredients(updatedIngredients);
 
-        ApiResponse<String> response = new ApiResponse<>(
-                "Recipe successfully updated",
-                recipeResponse.getName(),
-                true
-        );
-        return response;
-
+        return saveRecipeToRepository(recipe, "Recipe's given fields updated");
     }
 
+    // Method to delete a recipe by its id
     public void deleteRecipe(Long id) {
         if (!recipeRepository.existsById(id)) {
             throw new ResourceNotFoundException("Recipe not found with id: " + id);
         }
         recipeRepository.deleteById(id);
+    }
+
+    // Helper method to save a recipe and return a response
+    private ApiResponse<String> saveRecipeToRepository(Recipe recipe, String successMessage) {
+        recipe.setUpdatedAt(LocalDateTime.now()); // Set updated timestamp
+        Recipe savedRecipe = recipeRepository.save(recipe);
+        return createApiResponse(savedRecipe, successMessage);
+    }
+
+    // Helper to find a recipe by ID and handle not found exception
+    private Recipe findRecipeById(Long id) {
+        return recipeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Recipe with id: " + id + " does not exist"));
+    }
+
+
+    // Helper method to create an ApiResponse
+    private ApiResponse<String> createApiResponse(Recipe recipe, String message) {
+        RecipeResponseDT0 recipeResponse = modelMapper.map(recipe, RecipeResponseDT0.class);
+        return new ApiResponse<>(message, recipeResponse.getName(), true);
     }
 }

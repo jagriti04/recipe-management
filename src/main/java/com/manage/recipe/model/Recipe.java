@@ -31,7 +31,7 @@ public class Recipe {
     )
     private List<Ingredient> ingredients;
 
-    @Lob // If instructions are large, we can store as a large object
+    @Column(columnDefinition = "TEXT")
     private String instructions;
 
     private LocalDateTime createdAt;
