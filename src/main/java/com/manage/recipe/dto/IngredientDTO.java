@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class IngredientDTO {
+    private Long id;
     public String name;
     public Double quantity;
     public String unit;

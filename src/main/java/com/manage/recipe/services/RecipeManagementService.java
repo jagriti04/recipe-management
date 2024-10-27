@@ -1,13 +1,15 @@
 package com.manage.recipe.services;
 
-import com.manage.recipe.dto.ApiResponse;
-import com.manage.recipe.dto.RecipeRequestDTO;
-import com.manage.recipe.dto.RecipeResponse;
-import com.manage.recipe.dto.RecipeResponseDT0;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.manage.recipe.dto.*;
+import com.manage.recipe.exception.ResourceNotFoundException;
 import com.manage.recipe.model.Ingredient;
 import com.manage.recipe.model.Recipe;
 import com.manage.recipe.repository.RecipeRepository;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,11 @@ public class RecipeManagementService {
     @Autowired
     private IngredientService ingredientService;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(RecipeManagementService.class);
+
     public RecipeResponse getAllRecipes(){
         List<Recipe> recipes = recipeRepository.findAll();
         // Map the list of Recipe to RecipeResponseDTO
@@ -35,6 +42,13 @@ public class RecipeManagementService {
                 .map(recipe -> modelMapper.map(recipe, RecipeResponseDT0.class))
                 .collect(Collectors.toList());
         RecipeResponse response = new RecipeResponse();
+
+        for(Recipe r: recipes){
+            logger.info("GET method- db response: {}", r.getIngredients());
+        }
+
+        logger.info("GET method- response ingredients list is: {}", recipeResponseList);
+
         response.setRecipes(recipeResponseList);
         response.setTotalRecipes(recipes.size());
         return response;
@@ -50,7 +64,9 @@ public class RecipeManagementService {
                 .map(ingredientDTO -> ingredientService.findOrCreateIngredient(ingredientDTO))
                 .collect(Collectors.toList());
 
-        recipe.setIngredientList(ingredients); // Set the ingredient list
+        recipe.setIngredients(ingredients); // Set the ingredient list
+
+        logger.info("Adding recipe and ingredients are {}", recipe.getIngredients());
 
         recipe.setCreatedAt(LocalDateTime.now()); // Set createdAt timestamp
         recipe.setUpdatedAt(LocalDateTime.now()); // Set updatedAt timestamp
@@ -70,10 +86,8 @@ public class RecipeManagementService {
         Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Recipe with id:" + id +"is not existed"));
 
-        // Map the fields from the DTO to the existing recipe entity
         modelMapper.map(updatedRecipeDTO, recipe);
 
-        // Set the updated timestamp and save the updated entity
         recipe.setUpdatedAt(LocalDateTime.now());
         Recipe updatedRecipe = recipeRepository.save(recipe);
 
@@ -85,5 +99,32 @@ public class RecipeManagementService {
                 true
         );
         return response;
+    }
+
+    public ApiResponse<String> updatePartialRecipe(Long id, RecipeUpdateRequestDTO updatedRecipeDTO) throws JsonMappingException {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Person with uid" + id + "is not existed"));
+
+
+        objectMapper.updateValue(recipe, updatedRecipeDTO);
+
+        Recipe updatedRecipe = recipeRepository.save(recipe);
+
+        RecipeResponseDT0 recipeResponse = modelMapper.map(updatedRecipe, RecipeResponseDT0.class);
+
+        ApiResponse<String> response = new ApiResponse<>(
+                "Recipe successfully updated",
+                recipeResponse.getName(),
+                true
+        );
+        return response;
+
+    }
+
+    public void deleteRecipe(Long id) {
+        if (!recipeRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Recipe not found with id: " + id);
+        }
+        recipeRepository.deleteById(id);
     }
 }

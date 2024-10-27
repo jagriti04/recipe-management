@@ -1,8 +1,7 @@
 package com.manage.recipe.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,6 +9,8 @@ import java.util.List;
 @Entity
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-generate ID
@@ -17,15 +18,18 @@ public class Recipe {
 
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    private RecipeType recipeType;
+
     private Integer servings;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) // Define cascade and fetch type
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "recipe_ingredient", // Join table to manage ManyToMany relationship
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "ingredient_id")
     )
-    private List<Ingredient> ingredientList;
+    private List<Ingredient> ingredients;
 
     @Lob // If instructions are large, we can store as a large object
     private String instructions;

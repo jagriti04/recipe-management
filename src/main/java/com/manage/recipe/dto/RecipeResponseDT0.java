@@ -1,5 +1,8 @@
 package com.manage.recipe.dto;
 
+import com.manage.recipe.model.RecipeType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RecipeResponseDT0 {
+    private Long id;
     public String name;
-    public String type;
+    @Enumerated(EnumType.STRING)
+    private RecipeType recipeType;
     public Integer servings;
     public List<IngredientDTO> ingredientsList;
     public String instructions;

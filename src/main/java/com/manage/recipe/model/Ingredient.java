@@ -1,10 +1,8 @@
 package com.manage.recipe.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -13,16 +11,19 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class Ingredient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     public String name;
     public Double quantity;
     public String unit;
 
-    @ManyToMany(mappedBy = "ingredientList")
+    @ManyToMany(mappedBy = "ingredients")
+    @JsonIgnore
     private List<Recipe> recipes;
 
     public Ingredient(String name, Double quantity, String unit) {
