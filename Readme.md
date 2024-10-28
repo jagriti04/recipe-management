@@ -109,7 +109,8 @@ Request Body for Recipe Update (**PATCH** ```/api/recipes/1```):
     "servings" : 4,
     "ingredients": [{"name": "coffee powder", "quantity": 30},
           {"name": "milk", "quantity": 30, "unit":"ml"} ],
-    "instructions": "Boil and mix"
+    "instructions": "Boil and mix",
+    "removeIngredients": ["sugar"]
 }
 ```
 One or more fields can be given for update.
