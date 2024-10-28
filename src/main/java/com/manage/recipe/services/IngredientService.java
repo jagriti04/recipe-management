@@ -59,10 +59,10 @@ public class IngredientService {
         // To update existing ingredients and adding new ones
         if (incomingIngredients != null) {
             for (IngredientDTO incoming : incomingIngredients) {
-                // Check if the ingredient has an ID for update
+                // Checking if the ingredient has an ID for update
                 if (incoming.getId() != null && existingIngredientMapById.containsKey(incoming.getId())) {
                     Ingredient existing = existingIngredientMapById.get(incoming.getId());
-                    // Update existing ingredient
+                    // Updating existing ingredient
                     if(incoming.getQuantity() != null) {
                         existing.setQuantity(incoming.getQuantity());
                     }
@@ -80,7 +80,7 @@ public class IngredientService {
                     Ingredient existingByName = existingIngredientMapByName.get(ingredientName);
 
                     if (existingByName != null) {
-                        // Update by name if it exists
+                        // Updating by name if it exists
                         if(incoming.getQuantity() != null) {
                             existingByName.setQuantity(incoming.getQuantity());
                         }
@@ -88,7 +88,7 @@ public class IngredientService {
                             existingByName.setUnit(incoming.getUnit());
                         }
                     } else {
-                        // Add as new ingredient
+                        // Adding as new ingredient
                         Ingredient newIngredient = new Ingredient(incoming.getName().toLowerCase(),
                                 incoming.getQuantity(),
                                 incoming.getUnit());
@@ -99,7 +99,7 @@ public class IngredientService {
             }
         }
 
-        // Remove ingredients specified in `removeIngredients`
+        // Removing ingredients specified in `removeIngredients`
         if (removeIngredients != null && !removeIngredients.isEmpty()) {
             existingIngredients.removeIf(ingredient ->
                     removeIngredients.stream().anyMatch(removeName ->

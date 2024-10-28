@@ -63,7 +63,7 @@ public class RecipeManagementService {
 
 
     // Method for update recipe - one or more or all fields update
-    public ApiResponse<String> updatePartialRecipe(Long id, RecipeUpdateRequestDTO updatedRecipeDTO) throws JsonMappingException {
+    public ApiResponse<String> updateRecipe(Long id, RecipeUpdateRequestDTO updatedRecipeDTO) throws JsonMappingException {
         Recipe recipe = findRecipeById(id);
 
         // Handle ingredients
@@ -81,7 +81,7 @@ public class RecipeManagementService {
 
         logger.info("Partial updated request: {} and old recipe: {}", updatedRecipeDTO, recipe);
 
-        objectMapper.updateValue(recipe, updatedRecipeDTO); // Update specific fields in Recipe entity
+        objectMapper.updateValue(recipe, updatedRecipeDTO); // Updates specific fields in Recipe entity
 
         if(updatedIngredients != null) {
             recipe.setIngredients(updatedIngredients);
@@ -100,8 +100,9 @@ public class RecipeManagementService {
 
     // Helper method to save a recipe and return a response
     private ApiResponse<String> saveRecipeToRepository(Recipe recipe, String successMessage) {
-        recipe.setUpdatedAt(LocalDateTime.now()); // Set updated timestamp
+        recipe.setUpdatedAt(LocalDateTime.now()); // setting updated timestamp
         Recipe savedRecipe = recipeRepository.save(recipe);
+        logger.info("Saving to repository: {}", savedRecipe.getName());
         return createApiResponse(savedRecipe, successMessage);
     }
 
@@ -115,6 +116,9 @@ public class RecipeManagementService {
     // Helper method to create an ApiResponse
     private ApiResponse<String> createApiResponse(Recipe recipe, String message) {
         RecipeResponseDT0 recipeResponse = modelMapper.map(recipe, RecipeResponseDT0.class);
+        logger.info("API response: {}", recipeResponse);
         return new ApiResponse<>(message, recipeResponse.getName(), true);
     }
+
+
 }

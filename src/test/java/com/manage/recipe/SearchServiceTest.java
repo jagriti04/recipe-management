@@ -40,12 +40,15 @@ class SearchServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Create a sample recipe for testing
+        Ingredient ingredient1 = new Ingredient("flour", 15.0, "gram");
+        Ingredient ingredient2 = new Ingredient("milk", 15.0, "ml");
         List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(ingredient1);
+        ingredients.add(ingredient2);
         sampleRecipe = new Recipe(1L, "Pancakes", RecipeType.VEGETARIAN, 2, ingredients , "Mix and cook ingredients",
                 LocalDateTime.now(), LocalDateTime.now());
 
-        // Create a sample RecipeResponseDTO
+        // A sample RecipeResponseDTO
         sampleRecipeResponseDTO = new RecipeResponseDT0();
         sampleRecipeResponseDTO.setName("Pancakes");
     }
@@ -98,7 +101,6 @@ class SearchServiceTest {
                 any(), any(), any(), any(), eq(searchInstructions)
         )).thenReturn(List.of(sampleRecipe));
 
-        // Mock ModelMapper behavior for converting Recipe to RecipeResponseDTO
         when(modelMapper.map(any(Recipe.class), eq(RecipeResponseDT0.class))).thenReturn(sampleRecipeResponseDTO);
 
 
